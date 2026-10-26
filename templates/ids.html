@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intrusion Detection System</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-titles">
+      <h1>Intrusion Detection System</h1>
+      <p class="subtitle">Threat Intelligence · Attack Identification · Human-in-the-Loop Remediation</p>
+    </div>
+    <div class="header-actions">
+      {% if user %}
+        <span class="user-pill"><span class="user-dot"></span>Technician: <strong>{{ user }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="header-btn logout-btn">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="header-btn login-btn">Technician Login</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <nav class="portal-nav">
+    <a href="{{ url_for('analyzer') }}" class="nav-tab">📊 Network Traffic Analyzer</a>
+    <a href="{{ url_for('ids') }}" class="nav-tab active">🛡️ Intrusion Detection System</a>
+  </nav>
+
+  <section class="ids-summary-cards">
+    <div class="card alert"><span class="label">Total Incidents</span><span class="value" id="ids-total-incidents">-</span></div>
+    <div class="card"><span class="label">Random Forest Attacks</span><span class="value" id="ids-rf-attacks">-</span></div>
+    <div class="card"><span class="label">Isolation Forest Anomalies</span><span class="value" id="ids-iso-anomalies">-</span></div>
+    <div class="threshold-card-top">
+      <span class="threshold-card-label">Isolation Forest Dynamic Threshold</span>
+      <strong id="stat-threshold" class="threshold-card-value">-0.080</strong>
+    </div>
+  </section>
+
+  <section class="incidents">
+    <div class="incidents-header">
+      <h2>Security Incident Log</h2>
+      <div class="incidents-controls">
+        <select id="filter-model" class="filter-select">
+          <option value="all">All Models</option>
+          <option value="random_forest">Random Forest</option>
+          <option value="isolation_forest">Isolation Forest</option>
+        </select>
+        <select id="filter-label" class="filter-select">
+          <option value="all">All Threats</option>
+          <option value="port_scan">Port Scan</option>
+          <option value="dos">DOS</option>
+          <option value="brute_force">Brute Force</option>
+          <option value="anomaly">Anomaly</option>
+        </select>
+        <select id="filter-severity" class="filter-select">
+          <option value="all">All Severities</option>
+          <option value="HIGH">High Severity</option>
+          <option value="MEDIUM">Medium Severity</option>
+          <option value="LOW">Low Severity</option>
+        </select>
+        <select id="filter-verdict" class="filter-select">
+          <option value="all">All Verdicts</option>
+          <option value="pending">Pending</option>
+          <option value="true_positive">True Positive</option>
+          <option value="false_positive">False Positive</option>
+        </select>
+        <button id="clear-incidents-btn" class="clear-btn" onclick="clearIncidentLog()">Clear Log</button>
+      </div>
+    </div>
+
+    <div class="table-scroll-wrapper">
+      <table id="incident-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Threat</th>
+            <th>Severity</th>
+            <th>Confidence / Score</th>
+            <th>Attacker (Source IP)</th>
+            <th>Target (Victim : Port)</th>
+            <th>Model</th>
+            <th>Verdict</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <script src="{{ url_for('static', filename='ids.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Technician Login · Network IDS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  .login-container {
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 40px 42px;
+    width: 100%;
+    max-width: 440px;
+  }
+  .login-card h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+  .login-divider {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 0 0 28px 0;
+  }
+  .form-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .form-group label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .form-group input {
+    background: #080808;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .form-group input:focus {
+    border-color: var(--accent);
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: #222222;
+    border: 1px solid #383838;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: 10px;
+  }
+  .btn-submit:hover {
+    background: #2e2e2e;
+    border-color: var(--accent);
+  }
+  .error-box {
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    color: #f87171;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .register-hint {
+    text-align: center;
+    margin-top: 24px;
+  }
+  .register-hint a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.76rem;
+    transition: color 0.15s ease;
+  }
+  .register-hint a:hover {
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <h2>Technician Portal</h2>
+      <hr class="login-divider">
+
+      {% if error %}
+        <div class="error-box">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+          <label for="username">Technician ID</label>
+          <input type="text" id="username" name="username" placeholder="Enter Technician ID" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Secret Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter Password" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Sign In as Technician</button>
+      </form>
+
+      <div class="register-hint">
+        <a href="{{ url_for('register') }}">+ Create New Technician Account</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

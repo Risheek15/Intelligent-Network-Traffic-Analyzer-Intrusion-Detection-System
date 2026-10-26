@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Technician · Network IDS</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<style>
+  .register-container {
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .register-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 40px 42px;
+    width: 100%;
+    max-width: 440px;
+  }
+  .register-card h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: -0.01em;
+  }
+  .register-divider {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 0 0 28px 0;
+  }
+  .form-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .form-group label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .form-group input {
+    background: #080808;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-size: 0.92rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .form-group input:focus {
+    border-color: var(--accent);
+  }
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: #222222;
+    border: 1px solid #383838;
+    color: #ffffff;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: 10px;
+  }
+  .btn-submit:hover {
+    background: #2e2e2e;
+    border-color: var(--accent);
+  }
+  .error-box {
+    background: rgba(248, 113, 113, 0.08);
+    border: 1px solid rgba(248, 113, 113, 0.25);
+    color: #f87171;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .success-box {
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    color: #4ade80;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .back-hint {
+    text-align: center;
+    margin-top: 24px;
+  }
+  .back-hint a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.76rem;
+    transition: color 0.15s ease;
+  }
+  .back-hint a:hover {
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+  <div class="register-container">
+    <div class="register-card">
+      <h2>Create Technician Account</h2>
+      <hr class="register-divider">
+
+      {% if error %}
+        <div class="error-box">{{ error }}</div>
+      {% endif %}
+      {% if success %}
+        <div class="success-box">{{ success }}</div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="form-group">
+          <label for="username">Technician ID</label>
+          <input type="text" id="username" name="username" placeholder="e.g. analyst1" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Secret Password</label>
+          <input type="password" id="password" name="password" placeholder="At least 4 characters" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Register Technician</button>
+      </form>
+
+      <div class="back-hint">
+        <a href="{{ url_for('login') }}">← Back to Sign In</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

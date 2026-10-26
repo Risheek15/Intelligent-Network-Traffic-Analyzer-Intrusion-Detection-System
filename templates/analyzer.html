@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Traffic Analyzer</title>
+<script src="{{ url_for('static', filename='chart.umd.min.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-titles">
+      <h1>Network Traffic Analyzer</h1>
+      <p class="subtitle">Live Packet Throughput · Traffic Flow · Protocol Distribution</p>
+    </div>
+    <div class="header-actions">
+      {% if user %}
+        <span class="user-pill"><span class="user-dot"></span>Technician: <strong>{{ user }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="header-btn logout-btn">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="header-btn login-btn">Technician Login</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <nav class="portal-nav">
+    <a href="{{ url_for('analyzer') }}" class="nav-tab active">📊 Network Traffic Analyzer</a>
+    <a href="{{ url_for('ids') }}" class="nav-tab">🛡️ Intrusion Detection System</a>
+  </nav>
+
+  <section class="summary-cards">
+    <div class="card"><span class="label">Windows Analyzed</span><span class="value" id="stat-windows">-</span></div>
+    <div class="card"><span class="label">Total Packets</span><span class="value" id="stat-packets">-</span></div>
+    <div class="card"><span class="label">Total Bytes</span><span class="value" id="stat-bytes">-</span></div>
+    <div class="card alert" onclick="window.location.href='/ids'" style="cursor: pointer;" title="Click to view IDS incident log">
+      <span class="label">Flagged Incidents →</span>
+      <span class="value" id="stat-incidents">-</span>
+    </div>
+  </section>
+
+  <section class="charts">
+    <div class="chart-box">
+      <div class="chart-box-header">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <h2 id="chart-title">Packet Rate Over Time</h2>
+          <div class="chart-mode-toggle">
+            <button id="mode-packets-btn" class="toggle-mode-btn active" onclick="setChartMode('packets')">Packets</button>
+            <button id="mode-bytes-btn" class="toggle-mode-btn" onclick="setChartMode('bytes')">Bandwidth (KB/s)</button>
+          </div>
+        </div>
+        <button id="reset-traffic-btn" class="clear-btn" onclick="clearTrafficData()">Reset Graph</button>
+      </div>
+      <canvas id="trafficChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-box-header">
+        <h2>Protocol Breakdown (Avg.)</h2>
+      </div>
+      <canvas id="protocolChart"></canvas>
+    </div>
+  </section>
+
+  <section class="flow-inspector">
+    <div class="flow-inspector-header">
+      <div class="flow-inspector-title">
+        <span class="live-pulse-dot"></span>
+        <h2>Live Network Flow Inspector</h2>
+        <span class="flow-inspector-subtitle">Real-time socket flows &amp; rolling packet records</span>
+      </div>
+      <div class="flow-inspector-actions">
+        <button class="clear-btn" onclick="clearStreamLog()">Clear Feed</button>
+      </div>
+    </div>
+
+    <div class="flow-filter-bar">
+      <div class="flow-filter-top-row">
+        <div class="filter-item filter-proto-item">
+          <label for="stream-proto-filter">Protocol</label>
+          <select id="stream-proto-filter" class="filter-select" onchange="renderStream()">
+            <option value="all">All Protocols</option>
+            <option value="TCP">TCP</option>
+            <option value="UDP">UDP</option>
+            <option value="ICMP">ICMP</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="stream-src-filter">Source IP</label>
+          <input type="text" id="stream-src-filter" class="terminal-filter-input" placeholder="Filter Src IP..." oninput="renderStream()">
+        </div>
+        <div class="filter-item">
+          <label for="stream-dst-filter">Destination IP / Port</label>
+          <input type="text" id="stream-dst-filter" class="terminal-filter-input" placeholder="Filter Dst IP or Port..." oninput="renderStream()">
+        </div>
+        <div class="filter-actions-item">
+          <button class="reset-filter-btn" onclick="resetStreamFilters()">↺ Reset All Filters</button>
+        </div>
+      </div>
+
+      <div class="flow-filter-sliders-grid">
+        <!-- 1. Packets Range Slider -->
+        <div class="slider-card" id="slider-card-pkts">
+          <div class="slider-header">
+            <span class="slider-title">Packets (pkts)</span>
+            <span class="slider-badge" id="pkts-pill">All (0 – 10,000+ pkts)</span>
+          </div>
+          <div class="dual-slider-track" id="track-pkts">
+            <div class="slider-rail"></div>
+            <div class="slider-fill" id="fill-pkts"></div>
+            <input type="range" id="pkts-min" min="0" max="10000" step="50" value="0">
+            <input type="range" id="pkts-max" min="0" max="10000" step="50" value="10000">
+          </div>
+          <div class="slider-inputs-row">
+            <div class="slider-input-group">
+              <span class="slider-input-lbl">Lower</span>
+              <input type="number" id="pkts-min-num" class="slider-num-input" min="0" max="10000" step="50" value="0">
+            </div>
+            <div class="slider-input-group">
+              <span class="slider-input-lbl">Upper</span>
+              <input type="number" id="pkts-max-num" class="slider-num-input" min="0" max="10000" step="50" value="10000">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Traffic Size (KB) Range Slider -->
+        <div class="slider-card" id="slider-card-size">
+          <div class="slider-header">
+            <span class="slider-title">Traffic Size (KB)</span>
+            <span class="slider-badge" id="size-pill">All (0 – 10,000+ KB)</span>
+          </div>
+          <div class="dual-slider-track" id="track-size">
+            <div class="slider-rail"></div>
+            <div class="slider-fill" id="fill-size"></div>
+            <input type="range" id="size-min" min="0" max="10000" step="50" value="0">
+            <input type="range" id="size-max" min="0" max="10000" step="50" value="10000">
+          </div>
+          <div class="slider-inputs-row">
+            <div class="slider-input-group">
+              <span class="slider-input-lbl">Lower</span>
+              <input type="number" id="size-min-num" class="slider-num-input" min="0" max="10000" step="50" value="0">
+            </div>
+            <div class="slider-input-group">
+              <span class="slider-input-lbl">Upper</span>
+              <input type="number" id="size-max-num" class="slider-num-input" min="0" max="10000" step="50" value="10000">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Network Flows Range Slider -->
+        <div class="slider-card" id="slider-card-flows">
+          <div class="slider-header">
+            <span class="slider-title">Network Flows</span>
+            <span class="slider-badge" id="flows-pill">All (0 – 500+ flows)</span>
+          </div>
+          <div class="dual-slider-track" id="track-flows">
+            <div class="slider-rail"></div>
+            <div class="slider-fill" id="fill-flows"></div>
+            <input type="range" id="flows-min" min="0" max="500" step="5" value="0">
+            <input type="range" id="flows-max" min="0" max="500" step="5" value="500">
+          </div>
+          <div class="slider-inputs-row">
+            <div class="slider-input-group">
+              <span class="slider-input-lbl">Lower</span>
+              <input type="number" id="flows-min-num" class="slider-num-input" min="0" max="500" step="5" value="0">
+            </div>
+            <div class="slider-input-group">
+              <span class="slider-input-lbl">Upper</span>
+              <input type="number" id="flows-max-num" class="slider-num-input" min="0" max="500" step="5" value="500">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-terminal" id="flow-terminal">
+      <div class="terminal-placeholder">Listening for incoming live network flows...</div>
+    </div>
+  </section>
+
+  <script src="{{ url_for('static', filename='analyzer.js') }}"></script>
+</body>
+</html>
